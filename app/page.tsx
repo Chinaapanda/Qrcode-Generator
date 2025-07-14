@@ -30,13 +30,6 @@ const defaultConfig: QRConfig = {
   // Frame feature
   frameStyle: "scan-me",
   frameText: "SCAN ME",
-  // New image preview defaults
-  previewMode: "qr-only",
-  previewImage: null,
-  previewTemplate: "none",
-  qrPositionX: 50,
-  qrPositionY: 50,
-  qrScale: 1,
   // Pixel matching defaults
   pixelMatchEnabled: false,
   pixelMatchImage: null,

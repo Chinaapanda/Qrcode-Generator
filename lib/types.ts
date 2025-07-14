@@ -55,13 +55,6 @@ export interface QRConfig {
   // Frame feature
   frameStyle: "none" | "scan-me" | "speech-bubble" | "rounded-box" | "border";
   frameText: string;
-  // New image preview properties
-  previewMode: "qr-only" | "image-preview";
-  previewImage: File | null;
-  previewTemplate: "none" | "watch" | "phone" | "tablet" | "laptop" | "custom";
-  qrPositionX: number;
-  qrPositionY: number;
-  qrScale: number;
   // Pixel matching feature
   pixelMatchEnabled: boolean;
   pixelMatchImage: File | null;
@@ -94,11 +87,4 @@ export interface SelectProps {
   onChange: (value: string) => void;
   options: SelectOption[];
   label: string;
-}
-
-export interface ImagePreviewProps {
-  config: QRConfig;
-  qrCodeDataUrl: string | null;
-  previewImageUrl: string | null;
-  onUpdateConfig: (updates: Partial<QRConfig>) => void;
 }

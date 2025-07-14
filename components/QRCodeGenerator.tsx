@@ -12,10 +12,8 @@ const QRCodeGenerator = ({
   resetConfig,
 }: QRGeneratorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const previewImageInputRef = useRef<HTMLInputElement>(null);
   const pixelMatchImageInputRef = useRef<HTMLInputElement>(null);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
-  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [pixelMatchImageUrl, setPixelMatchImageUrl] = useState<string | null>(
     null
   );
@@ -29,22 +27,6 @@ const QRCodeGenerator = ({
         const dataUrl = e.target?.result as string;
         setLogoDataUrl(dataUrl);
         updateConfig({ logo: file });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle preview image upload
-  const handlePreviewImageUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setPreviewImageUrl(dataUrl);
-        updateConfig({ previewImage: file, previewMode: "image-preview" });
       };
       reader.readAsDataURL(file);
     }
@@ -72,15 +54,6 @@ const QRCodeGenerator = ({
     updateConfig({ logo: null });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
-    }
-  };
-
-  // Remove preview image
-  const removePreviewImage = () => {
-    setPreviewImageUrl(null);
-    updateConfig({ previewImage: null, previewMode: "qr-only" });
-    if (previewImageInputRef.current) {
-      previewImageInputRef.current.value = "";
     }
   };
 
@@ -117,7 +90,6 @@ const QRCodeGenerator = ({
       <QRPreview
         config={config}
         logoDataUrl={logoDataUrl}
-        previewImageUrl={previewImageUrl}
         pixelMatchImageUrl={pixelMatchImageUrl}
         onDownload={downloadQR}
         onReset={resetConfig}
@@ -152,49 +124,6 @@ const QRCodeGenerator = ({
             <div className="absolute bottom-2 right-2 text-xs text-gray-400">
               {config.data.length} characters
             </div>
-          </div>
-        </div>
-
-        {/* Preview Image Upload */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
-            🖼️ Preview Background Image
-          </label>
-          <div className="space-y-3">
-            <button
-              onClick={() => previewImageInputRef.current?.click()}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group"
-            >
-              <Upload
-                size={20}
-                className="text-gray-400 group-hover:text-blue-500"
-              />
-              <span className="text-gray-600 group-hover:text-blue-600">
-                Upload Preview Image
-              </span>
-            </button>
-            <input
-              ref={previewImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePreviewImageUpload}
-              className="hidden"
-            />
-            {previewImageUrl && (
-              <div className="relative">
-                <img
-                  src={previewImageUrl}
-                  alt="Preview background"
-                  className="w-full h-24 object-cover rounded-lg border"
-                />
-                <button
-                  onClick={removePreviewImage}
-                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -347,66 +276,6 @@ const QRCodeGenerator = ({
                     </button>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* QR Position Controls (only show in image preview mode) */}
-        {config.previewMode === "image-preview" && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-800">
-              🎯 QR Code Position
-            </h3>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Horizontal Position: {config.qrPositionX.toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={config.qrPositionX}
-                  onChange={(e) =>
-                    updateConfig({ qrPositionX: parseFloat(e.target.value) })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Vertical Position: {config.qrPositionY.toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={config.qrPositionY}
-                  onChange={(e) =>
-                    updateConfig({ qrPositionY: parseFloat(e.target.value) })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Scale: {(config.qrScale * 100).toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0.3"
-                  max="2"
-                  step="0.1"
-                  value={config.qrScale}
-                  onChange={(e) =>
-                    updateConfig({ qrScale: parseFloat(e.target.value) })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
               </div>
             </div>
           </div>
