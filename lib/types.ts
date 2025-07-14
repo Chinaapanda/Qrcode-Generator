@@ -15,6 +15,53 @@ export interface QRConfig {
   logoCornerRadius: number;
   logoBackgroundColor: string;
   logoBackgroundTransparent: boolean;
+  // QR Styling with react-qrcode-pretty
+  qrVariant:
+    | "standard"
+    | "rounded"
+    | "dots"
+    | "circle"
+    | "fluid"
+    | "reverse"
+    | "shower"
+    | "gravity"
+    | "morse"
+    | "italic"
+    | "inclined";
+  eyeVariant:
+    | "standard"
+    | "rounded"
+    | "dots"
+    | "circle"
+    | "fluid"
+    | "reverse"
+    | "shower"
+    | "gravity"
+    | "morse"
+    | "italic"
+    | "inclined";
+  colorEffect:
+    | "none"
+    | "gradient-dark-vertical"
+    | "gradient-dark-horizontal"
+    | "gradient-dark-diagonal"
+    | "gradient-light-vertical"
+    | "gradient-light-horizontal"
+    | "gradient-light-diagonal"
+    | "colored"
+    | "shades";
+  divider: boolean;
+  bgRounded: boolean;
+  // Frame feature
+  frameStyle: "none" | "scan-me" | "speech-bubble" | "rounded-box" | "border";
+  frameText: string;
+  // New image preview properties
+  previewMode: "qr-only" | "image-preview";
+  previewImage: File | null;
+  previewTemplate: "none" | "watch" | "phone" | "tablet" | "laptop" | "custom";
+  qrPositionX: number;
+  qrPositionY: number;
+  qrScale: number;
 }
 
 export interface QRGeneratorProps {
@@ -41,4 +88,11 @@ export interface SelectProps {
   onChange: (value: string) => void;
   options: SelectOption[];
   label: string;
+}
+
+export interface ImagePreviewProps {
+  config: QRConfig;
+  qrCodeDataUrl: string | null;
+  previewImageUrl: string | null;
+  onUpdateConfig: (updates: Partial<QRConfig>) => void;
 }

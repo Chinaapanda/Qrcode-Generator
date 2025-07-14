@@ -21,6 +21,21 @@ const defaultConfig: QRConfig = {
   logoCornerRadius: 8,
   logoBackgroundColor: "#ffffff",
   logoBackgroundTransparent: false,
+  // QR Styling defaults
+  qrVariant: "standard",
+  eyeVariant: "standard",
+  colorEffect: "none",
+  divider: false,
+  bgRounded: false,
+  // Frame feature
+  frameStyle: "scan-me",
+  frameText: "SCAN ME",
+  // New image preview defaults
+  previewMode: "qr-only",
+  previewImage: null,
+  qrPositionX: 50,
+  qrPositionY: 50,
+  qrScale: 1,
 };
 
 export default function Home() {

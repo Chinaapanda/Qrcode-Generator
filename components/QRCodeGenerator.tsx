@@ -1,107 +1,20 @@
 "use client";
 
 import { DownloadFormat, QRGeneratorProps } from "@/lib/types";
-import { Download, RotateCcw, Upload } from "lucide-react";
-import QRCodeStyling from "qr-code-styling";
-import { useEffect, useRef, useState } from "react";
+import { Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
 import ColorPicker from "./ColorPicker";
-import Select from "./Select";
+import QRPreview from "./QRPreview";
 
 const QRCodeGenerator = ({
   config,
   updateConfig,
   resetConfig,
 }: QRGeneratorProps) => {
-  const qrCodeRef = useRef<HTMLDivElement>(null);
-  const qrCodeInstance = useRef<QRCodeStyling | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewImageInputRef = useRef<HTMLInputElement>(null);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
-
-  // Initialize QR code instance
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      qrCodeInstance.current = new QRCodeStyling({
-        width: config.size,
-        height: config.size,
-        type: "canvas",
-        data: config.data,
-        margin: config.margin,
-        qrOptions: {
-          typeNumber: 0,
-          mode: "Byte",
-          errorCorrectionLevel: "Q",
-        },
-        imageOptions: {
-          hideBackgroundDots: true,
-          imageSize: config.logoSize,
-          margin: config.logoMargin,
-          crossOrigin: "anonymous",
-        },
-        dotsOptions: {
-          color: config.dotColor,
-          type: config.dotShape,
-        },
-        backgroundOptions: {
-          color: config.backgroundTransparent
-            ? "transparent"
-            : config.backgroundColor,
-        },
-        cornersSquareOptions: {
-          color: config.cornerEyeColor,
-          type: config.cornerEyeStyle,
-        },
-        cornersDotOptions: {
-          color: config.cornerEyeInnerColor,
-          type: config.cornerEyeStyle,
-        },
-      });
-
-      if (qrCodeRef.current) {
-        qrCodeRef.current.innerHTML = "";
-        qrCodeInstance.current.append(qrCodeRef.current);
-      }
-    }
-  }, []);
-
-  // Update QR code when config changes (with debounce for performance)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (qrCodeInstance.current) {
-        qrCodeInstance.current.update({
-          width: config.size,
-          height: config.size,
-          data: config.data,
-          margin: config.margin,
-          image: logoDataUrl || undefined,
-          imageOptions: {
-            hideBackgroundDots: true,
-            imageSize: config.logoSize,
-            margin: config.logoMargin,
-            crossOrigin: "anonymous",
-          },
-          dotsOptions: {
-            color: config.dotColor,
-            type: config.dotShape,
-          },
-          backgroundOptions: {
-            color: config.backgroundTransparent
-              ? "transparent"
-              : config.backgroundColor,
-          },
-          cornersSquareOptions: {
-            color: config.cornerEyeColor,
-            type: config.cornerEyeStyle,
-          },
-          cornersDotOptions: {
-            color: config.cornerEyeInnerColor,
-            type: config.cornerEyeStyle,
-          },
-        });
-      }
-    }, 150); // 150ms debounce for better performance
-
-    return () => clearTimeout(timeoutId);
-  }, [config, logoDataUrl]);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Handle logo upload
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +30,22 @@ const QRCodeGenerator = ({
     }
   };
 
+  // Handle preview image upload
+  const handlePreviewImageUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setPreviewImageUrl(dataUrl);
+        updateConfig({ previewImage: file, previewMode: "image-preview" });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Remove logo
   const removeLogo = () => {
     setLogoDataUrl(null);
@@ -126,15 +55,18 @@ const QRCodeGenerator = ({
     }
   };
 
-  // Download QR code
-  const downloadQR = (format: DownloadFormat) => {
-    if (qrCodeInstance.current) {
-      const extension = format === "png" ? "png" : "svg";
-      qrCodeInstance.current.download({
-        name: `qr-code`,
-        extension,
-      });
+  // Remove preview image
+  const removePreviewImage = () => {
+    setPreviewImageUrl(null);
+    updateConfig({ previewImage: null, previewMode: "qr-only" });
+    if (previewImageInputRef.current) {
+      previewImageInputRef.current.value = "";
     }
+  };
+
+  // Download QR code (placeholder - actual download handled in QRPreview)
+  const downloadQR = (format: DownloadFormat) => {
+    // This is handled by QRPreview component
   };
 
   const dotShapeOptions = [
@@ -153,70 +85,14 @@ const QRCodeGenerator = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
       {/* QR Code Preview */}
-      <div className="lg:col-span-2 flex flex-col items-center space-y-8 lg:sticky lg:top-8 lg:self-start">
-        <div className="card p-8 w-full flex justify-center relative group">
-          {/* Decorative elements */}
-          <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full opacity-20 animate-pulse-slow"></div>
-          <div
-            className="absolute -top-4 -right-4 w-6 h-6 bg-gradient-to-br from-pink-400 to-yellow-600 rounded-full opacity-20 animate-pulse-slow"
-            style={{ animationDelay: "1s" }}
-          ></div>
-          <div
-            className="absolute -bottom-4 -left-4 w-6 h-6 bg-gradient-to-br from-green-400 to-blue-600 rounded-full opacity-20 animate-pulse-slow"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute -bottom-4 -right-4 w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-20 animate-pulse-slow"
-            style={{ animationDelay: "0.5s" }}
-          ></div>
-
-          {/* QR Code Container */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-200 to-purple-200 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
-            <div
-              ref={qrCodeRef}
-              className="relative flex justify-center items-center bg-white rounded-2xl shadow-inner p-4"
-              style={{
-                width: config.size + 32,
-                height: config.size + 32,
-                minWidth: config.size + 32,
-                minHeight: config.size + 32,
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Download Buttons */}
-        <div className="flex flex-wrap justify-center gap-4">
-          <button
-            onClick={() => downloadQR("png")}
-            className="btn-primary flex items-center space-x-2 group"
-          >
-            <Download size={20} className="group-hover:animate-bounce" />
-            <span>Download PNG</span>
-            <div className="absolute inset-0 bg-white/20 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-          </button>
-          <button
-            onClick={() => downloadQR("svg")}
-            className="btn-secondary flex items-center space-x-2 group"
-          >
-            <Download size={20} className="group-hover:animate-bounce" />
-            <span>Download SVG</span>
-            <div className="absolute inset-0 bg-white/20 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-          </button>
-          <button
-            onClick={resetConfig}
-            className="btn-neutral flex items-center space-x-2 group"
-          >
-            <RotateCcw
-              size={20}
-              className="group-hover:rotate-180 transition-transform duration-300"
-            />
-            <span>Reset All</span>
-            <div className="absolute inset-0 bg-white/20 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-          </button>
-        </div>
-      </div>
+      <QRPreview
+        config={config}
+        logoDataUrl={logoDataUrl}
+        previewImageUrl={previewImageUrl}
+        onDownload={downloadQR}
+        onReset={resetConfig}
+        onUpdateConfig={updateConfig}
+      />
 
       {/* Controls Panel */}
       <div className="card p-8 space-y-8 relative overflow-hidden lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:sticky lg:top-8 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
@@ -249,147 +125,343 @@ const QRCodeGenerator = ({
           </div>
         </div>
 
-        {/* Size */}
+        {/* Preview Image Upload */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-semibold text-gray-800">
-              📏 Size
-            </label>
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              {config.size}px
-            </span>
-          </div>
-          <div className="relative">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            🖼️ Preview Background Image
+          </label>
+          <div className="space-y-3">
+            <button
+              onClick={() => previewImageInputRef.current?.click()}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group"
+            >
+              <Upload
+                size={20}
+                className="text-gray-400 group-hover:text-blue-500"
+              />
+              <span className="text-gray-600 group-hover:text-blue-600">
+                Upload Preview Image
+              </span>
+            </button>
             <input
-              type="range"
-              min="200"
-              max="500"
-              value={config.size}
-              onChange={(e) => updateConfig({ size: parseInt(e.target.value) })}
-              className="w-full h-2 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg appearance-none cursor-pointer slider"
+              ref={previewImageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePreviewImageUpload}
+              className="hidden"
             />
-          </div>
-        </div>
-
-        {/* Margin */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-semibold text-gray-800">
-              📐 Margin
-            </label>
-            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-              {config.margin}px
-            </span>
-          </div>
-          <div className="relative">
-            <input
-              type="range"
-              min="0"
-              max="50"
-              value={config.margin}
-              onChange={(e) =>
-                updateConfig({ margin: parseInt(e.target.value) })
-              }
-              className="w-full h-2 bg-gradient-to-r from-purple-200 to-pink-200 rounded-lg appearance-none cursor-pointer slider"
-            />
-          </div>
-        </div>
-
-        {/* Colors */}
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-              <span>🌈</span>
-              <span>Colors</span>
-            </h3>
-            <div className="space-y-4">
-              <ColorPicker
-                color={config.dotColor}
-                onChange={(color) => updateConfig({ dotColor: color })}
-                label="Dot Color"
-              />
-
-              <ColorPicker
-                color={config.cornerEyeColor}
-                onChange={(color) => updateConfig({ cornerEyeColor: color })}
-                label="Corner Eye Color"
-              />
-
-              <ColorPicker
-                color={config.cornerEyeInnerColor}
-                onChange={(color) =>
-                  updateConfig({ cornerEyeInnerColor: color })
-                }
-                label="Corner Eye Inner Color"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Background */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-            <span>🖼️</span>
-            <span>Background</span>
-          </h3>
-          <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-200 hover:bg-white transition-all duration-300">
-            <div className="flex items-center space-x-3 mb-3">
-              <input
-                type="checkbox"
-                checked={config.backgroundTransparent}
-                onChange={(e) =>
-                  updateConfig({ backgroundTransparent: e.target.checked })
-                }
-                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <label className="text-sm font-semibold text-gray-800">
-                Transparent Background
-              </label>
-            </div>
-            {!config.backgroundTransparent && (
-              <ColorPicker
-                color={config.backgroundColor}
-                onChange={(color) => updateConfig({ backgroundColor: color })}
-                label="Background Color"
-              />
+            {previewImageUrl && (
+              <div className="relative">
+                <img
+                  src={previewImageUrl}
+                  alt="Preview background"
+                  className="w-full h-24 object-cover rounded-lg border"
+                />
+                <button
+                  onClick={removePreviewImage}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Shapes */}
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-              <span>⭐</span>
-              <span>Shapes</span>
+        {/* QR Position Controls (only show in image preview mode) */}
+        {config.previewMode === "image-preview" && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-800">
+              🎯 QR Code Position
             </h3>
-            <div className="space-y-4">
-              <Select
-                value={config.dotShape}
-                onChange={(value) => updateConfig({ dotShape: value as any })}
-                options={dotShapeOptions}
-                label="Dot Shape"
-              />
 
-              <Select
-                value={config.cornerEyeStyle}
-                onChange={(value) =>
-                  updateConfig({ cornerEyeStyle: value as any })
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Horizontal Position: {config.qrPositionX.toFixed(0)}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={config.qrPositionX}
+                  onChange={(e) =>
+                    updateConfig({ qrPositionX: parseFloat(e.target.value) })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Vertical Position: {config.qrPositionY.toFixed(0)}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={config.qrPositionY}
+                  onChange={(e) =>
+                    updateConfig({ qrPositionY: parseFloat(e.target.value) })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Scale: {(config.qrScale * 100).toFixed(0)}%
+                </label>
+                <input
+                  type="range"
+                  min="0.3"
+                  max="2"
+                  step="0.1"
+                  value={config.qrScale}
+                  onChange={(e) =>
+                    updateConfig({ qrScale: parseFloat(e.target.value) })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Size Controls */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-800">
+            📐 Size Settings
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Size: {config.size}px
+              </label>
+              <input
+                type="range"
+                min="200"
+                max="800"
+                value={config.size}
+                onChange={(e) =>
+                  updateConfig({ size: parseInt(e.target.value) })
                 }
-                options={cornerEyeStyleOptions}
-                label="Corner Eye Style"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Margin: {config.margin}px
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={config.margin}
+                onChange={(e) =>
+                  updateConfig({ margin: parseInt(e.target.value) })
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Color Controls */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-800">🎨 Colors</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <ColorPicker
+              color={config.dotColor}
+              onChange={(color) => updateConfig({ dotColor: color })}
+              label="Dots"
+            />
+            <ColorPicker
+              color={config.backgroundColor}
+              onChange={(color) => updateConfig({ backgroundColor: color })}
+              label="Background"
+            />
+            <ColorPicker
+              color={config.cornerEyeColor}
+              onChange={(color) => updateConfig({ cornerEyeColor: color })}
+              label="Corner Eyes"
+            />
+            <ColorPicker
+              color={config.cornerEyeInnerColor}
+              onChange={(color) => updateConfig({ cornerEyeInnerColor: color })}
+              label="Eye Centers"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="transparent-bg"
+              checked={config.backgroundTransparent}
+              onChange={(e) =>
+                updateConfig({ backgroundTransparent: e.target.checked })
+              }
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="transparent-bg" className="text-sm text-gray-700">
+              Transparent Background
+            </label>
+          </div>
+        </div>
+
+        {/* QR Styling Controls */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-800">✨ QR Styling</h3>
+
+          {/* QR Variant */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              QR Body Style
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { value: "standard", label: "■", desc: "Standard" },
+                { value: "rounded", label: "◼", desc: "Rounded" },
+                { value: "dots", label: "●", desc: "Dots" },
+                { value: "circle", label: "○", desc: "Circle" },
+                { value: "fluid", label: "~", desc: "Fluid" },
+                { value: "gravity", label: "▼", desc: "Gravity" },
+                { value: "morse", label: "⫿", desc: "Morse" },
+                { value: "shower", label: "⫶", desc: "Shower" },
+              ].map((variant) => (
+                <button
+                  key={variant.value}
+                  className={`w-full h-12 flex flex-col items-center justify-center rounded-lg border text-xs transition-all duration-200 ${
+                    config.qrVariant === variant.value
+                      ? "bg-blue-500 border-blue-600 shadow text-white"
+                      : "bg-white border-gray-300 hover:bg-blue-50 text-gray-700"
+                  }`}
+                  onClick={() =>
+                    updateConfig({ qrVariant: variant.value as any })
+                  }
+                  type="button"
+                  title={variant.desc}
+                >
+                  <span className="text-lg">{variant.label}</span>
+                  <span className="text-xs mt-1">{variant.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Eye Variant */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Corner Eye Style
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { value: "standard", label: "▣", desc: "Standard" },
+                { value: "rounded", label: "▢", desc: "Rounded" },
+                { value: "dots", label: "◉", desc: "Dots" },
+                { value: "circle", label: "◯", desc: "Circle" },
+                { value: "fluid", label: "⬚", desc: "Fluid" },
+                { value: "gravity", label: "⬇", desc: "Gravity" },
+              ].map((variant) => (
+                <button
+                  key={variant.value}
+                  className={`w-full h-12 flex flex-col items-center justify-center rounded-lg border text-xs transition-all duration-200 ${
+                    config.eyeVariant === variant.value
+                      ? "bg-purple-500 border-purple-600 shadow text-white"
+                      : "bg-white border-gray-300 hover:bg-purple-50 text-gray-700"
+                  }`}
+                  onClick={() =>
+                    updateConfig({ eyeVariant: variant.value as any })
+                  }
+                  type="button"
+                  title={variant.desc}
+                >
+                  <span className="text-lg">{variant.label}</span>
+                  <span className="text-xs mt-1">{variant.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color Effects */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Color Effects
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "none", label: "None" },
+                { value: "gradient-dark-vertical", label: "Gradient ↕" },
+                { value: "gradient-dark-horizontal", label: "Gradient ↔" },
+                { value: "gradient-dark-diagonal", label: "Gradient ↗" },
+                { value: "colored", label: "Colored" },
+                { value: "shades", label: "Shades" },
+              ].map((effect) => (
+                <button
+                  key={effect.value}
+                  className={`px-2 py-1 rounded-lg border text-xs font-medium transition-all duration-200 ${
+                    config.colorEffect === effect.value
+                      ? "bg-emerald-500 text-white border-emerald-600 shadow"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-emerald-50"
+                  }`}
+                  onClick={() =>
+                    updateConfig({ colorEffect: effect.value as any })
+                  }
+                  type="button"
+                >
+                  {effect.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Style Options */}
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="divider"
+                checked={config.divider}
+                onChange={(e) => updateConfig({ divider: e.target.checked })}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="divider" className="text-sm text-gray-700">
+                Add separation between dots
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="bg-rounded"
+                checked={config.bgRounded}
+                onChange={(e) => updateConfig({ bgRounded: e.target.checked })}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="bg-rounded" className="text-sm text-gray-700">
+                Rounded background
+              </label>
             </div>
           </div>
         </div>
 
         {/* Logo Upload */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-            <span>🖼️</span>
-            <span>Logo</span>
-          </h3>
-          <div className="space-y-4">
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            📸 Logo (Optional)
+          </label>
+          <div className="space-y-3">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group"
+            >
+              <Upload
+                size={20}
+                className="text-gray-400 group-hover:text-blue-500"
+              />
+              <span className="text-gray-600 group-hover:text-blue-600">
+                Upload Logo
+              </span>
+            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -397,100 +469,99 @@ const QRCodeGenerator = ({
               onChange={handleLogoUpload}
               className="hidden"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="relative group flex items-center space-x-3 px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-2 border-blue-200 rounded-xl hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 transition-all duration-300 w-full justify-center overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-indigo-100 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <Upload
-                size={20}
-                className="relative z-10 group-hover:scale-110 transition-transform duration-300"
-              />
-              <span className="relative z-10 font-semibold">
-                Choose Logo Image
-              </span>
-            </button>
             {logoDataUrl && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 text-sm">✓</span>
-                    </div>
-                    <span className="text-sm font-medium text-green-800">
-                      Logo uploaded successfully
-                    </span>
-                  </div>
-                  <button
-                    onClick={removeLogo}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium hover:underline transition-all duration-200"
-                  >
-                    Remove
-                  </button>
-                </div>
+              <div className="relative">
+                <img
+                  src={logoDataUrl}
+                  alt="Logo preview"
+                  className="w-full h-24 object-contain rounded-lg border bg-gray-50"
+                />
+                <button
+                  onClick={removeLogo}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <X size={16} />
+                </button>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Logo Settings */}
-        {logoDataUrl && (
-          <div className="space-y-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-                <span>⚙️</span>
-                <span>Logo Settings</span>
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-gray-800">
-                  🔍 Logo Size
+          {/* Logo Size Control */}
+          {logoDataUrl && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Logo Size: {(config.logoSize * 100).toFixed(0)}%
                 </label>
-                <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
-                  {Math.round(config.logoSize * 100)}%
-                </span>
-              </div>
-              <div className="relative">
                 <input
                   type="range"
                   min="0.1"
-                  max="0.5"
-                  step="0.05"
+                  max="0.8"
+                  step="0.1"
                   value={config.logoSize}
                   onChange={(e) =>
                     updateConfig({ logoSize: parseFloat(e.target.value) })
                   }
-                  className="w-full h-2 bg-gradient-to-r from-indigo-200 to-purple-200 rounded-lg appearance-none cursor-pointer slider"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                 />
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-gray-800">
-                  📐 Logo Margin
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Logo Margin: {config.logoMargin}px
                 </label>
-                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                  {config.logoMargin}px
-                </span>
-              </div>
-              <div className="relative">
                 <input
                   type="range"
                   min="0"
-                  max="20"
+                  max="30"
                   value={config.logoMargin}
                   onChange={(e) =>
                     updateConfig({ logoMargin: parseInt(e.target.value) })
                   }
-                  className="w-full h-2 bg-gradient-to-r from-purple-200 to-pink-200 rounded-lg appearance-none cursor-pointer slider"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                 />
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Frame Controls */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            🖼️ Frame
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "none", label: "None" },
+              { value: "scan-me", label: "Scan Me" },
+              { value: "speech-bubble", label: "Speech Bubble" },
+              { value: "rounded-box", label: "Rounded Box" },
+              { value: "border", label: "Border" },
+            ].map((frame) => (
+              <button
+                key={frame.value}
+                className={`px-3 py-1 rounded-lg border text-sm font-medium transition-all duration-200 ${
+                  config.frameStyle === frame.value
+                    ? "bg-blue-500 text-white border-blue-600 shadow"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                }`}
+                onClick={() => updateConfig({ frameStyle: frame.value as any })}
+                type="button"
+              >
+                {frame.label}
+              </button>
+            ))}
           </div>
-        )}
+          {config.frameStyle !== "none" && (
+            <input
+              type="text"
+              value={config.frameText}
+              onChange={(e) => updateConfig({ frameText: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg mt-2 text-sm"
+              placeholder="Frame text (e.g. SCAN ME)"
+              maxLength={24}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
