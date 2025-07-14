@@ -62,6 +62,12 @@ export interface QRConfig {
   qrPositionX: number;
   qrPositionY: number;
   qrScale: number;
+  // Pixel matching feature
+  pixelMatchEnabled: boolean;
+  pixelMatchImage: File | null;
+  pixelMatchOpacity: number;
+  pixelMatchBlending: "normal" | "multiply" | "overlay" | "screen";
+  pixelMatchResolution: number; // Scale factor for image processing
 }
 
 export interface QRGeneratorProps {

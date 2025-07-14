@@ -13,8 +13,12 @@ const QRCodeGenerator = ({
 }: QRGeneratorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewImageInputRef = useRef<HTMLInputElement>(null);
+  const pixelMatchImageInputRef = useRef<HTMLInputElement>(null);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [pixelMatchImageUrl, setPixelMatchImageUrl] = useState<string | null>(
+    null
+  );
 
   // Handle logo upload
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +50,22 @@ const QRCodeGenerator = ({
     }
   };
 
+  // Handle pixel match image upload
+  const handlePixelMatchImageUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setPixelMatchImageUrl(dataUrl);
+        updateConfig({ pixelMatchImage: file, pixelMatchEnabled: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Remove logo
   const removeLogo = () => {
     setLogoDataUrl(null);
@@ -61,6 +81,15 @@ const QRCodeGenerator = ({
     updateConfig({ previewImage: null, previewMode: "qr-only" });
     if (previewImageInputRef.current) {
       previewImageInputRef.current.value = "";
+    }
+  };
+
+  // Remove pixel match image
+  const removePixelMatchImage = () => {
+    setPixelMatchImageUrl(null);
+    updateConfig({ pixelMatchImage: null, pixelMatchEnabled: false });
+    if (pixelMatchImageInputRef.current) {
+      pixelMatchImageInputRef.current.value = "";
     }
   };
 
@@ -89,6 +118,7 @@ const QRCodeGenerator = ({
         config={config}
         logoDataUrl={logoDataUrl}
         previewImageUrl={previewImageUrl}
+        pixelMatchImageUrl={pixelMatchImageUrl}
         onDownload={downloadQR}
         onReset={resetConfig}
         onUpdateConfig={updateConfig}
@@ -167,6 +197,160 @@ const QRCodeGenerator = ({
             )}
           </div>
         </div>
+
+        {/* Pixel Match Image Upload */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            🎨 Pixel Match Image
+          </label>
+          <p className="text-xs text-gray-600 mb-3">
+            Upload an image to match QR code dots with image pixels. Each QR dot
+            will take the color of the corresponding pixel.
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => pixelMatchImageInputRef.current?.click()}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-300 group"
+            >
+              <Upload
+                size={20}
+                className="text-gray-400 group-hover:text-purple-500"
+              />
+              <span className="text-gray-600 group-hover:text-purple-600">
+                Upload Pixel Match Image
+              </span>
+            </button>
+            <input
+              ref={pixelMatchImageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePixelMatchImageUpload}
+              className="hidden"
+            />
+            {pixelMatchImageUrl && (
+              <div className="relative">
+                <img
+                  src={pixelMatchImageUrl}
+                  alt="Pixel match"
+                  className="w-full h-24 object-cover rounded-lg border"
+                />
+                <button
+                  onClick={removePixelMatchImage}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Pixel Match Controls (only show when pixel match image is uploaded) */}
+        {config.pixelMatchEnabled && config.pixelMatchImage && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-800">
+              🎯 Pixel Matching Settings
+            </h3>
+
+            <div className="space-y-3">
+              {/* Enable/Disable Toggle */}
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-gray-600">
+                  Enable Pixel Matching
+                </label>
+                <button
+                  onClick={() =>
+                    updateConfig({
+                      pixelMatchEnabled: !config.pixelMatchEnabled,
+                    })
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    config.pixelMatchEnabled ? "bg-purple-600" : "bg-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      config.pixelMatchEnabled
+                        ? "translate-x-6"
+                        : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Opacity Control */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Pixel Opacity: {(config.pixelMatchOpacity * 100).toFixed(0)}%
+                </label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value={config.pixelMatchOpacity}
+                  onChange={(e) =>
+                    updateConfig({
+                      pixelMatchOpacity: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+
+              {/* Resolution Control */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Resolution: {config.pixelMatchResolution}x
+                  {config.pixelMatchResolution}
+                </label>
+                <input
+                  type="range"
+                  min="15"
+                  max="50"
+                  step="5"
+                  value={config.pixelMatchResolution}
+                  onChange={(e) =>
+                    updateConfig({
+                      pixelMatchResolution: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+
+              {/* Blending Mode */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Blending Mode
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "normal", label: "Normal" },
+                    { value: "multiply", label: "Multiply" },
+                    { value: "overlay", label: "Overlay" },
+                    { value: "screen", label: "Screen" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.value}
+                      className={`px-3 py-1 rounded-lg border text-xs font-medium transition-all duration-200 ${
+                        config.pixelMatchBlending === mode.value
+                          ? "bg-purple-500 text-white border-purple-600 shadow"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-purple-50"
+                      }`}
+                      onClick={() =>
+                        updateConfig({ pixelMatchBlending: mode.value as any })
+                      }
+                      type="button"
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* QR Position Controls (only show in image preview mode) */}
         {config.previewMode === "image-preview" && (

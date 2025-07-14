@@ -1,12 +1,19 @@
+import {
+  PixelData,
+  getQRMatrixSize,
+  processImageForPixelMatching,
+} from "@/lib/pixelMatcher";
 import { DownloadFormat, QRConfig } from "@/lib/types";
 import { Download, Image, QrCode, RotateCcw } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QrcodeCanvas } from "react-qrcode-pretty";
+import PixelMatchQR from "./PixelMatchQR";
 
 interface QRPreviewProps {
   config: QRConfig;
   logoDataUrl: string | null;
   previewImageUrl: string | null;
+  pixelMatchImageUrl: string | null;
   onDownload: (format: DownloadFormat) => void;
   onReset: () => void;
   onUpdateConfig: (updates: Partial<QRConfig>) => void;
@@ -220,6 +227,7 @@ const QRPreview = ({
   config,
   logoDataUrl,
   previewImageUrl,
+  pixelMatchImageUrl,
   onDownload,
   onReset,
   onUpdateConfig,
@@ -228,6 +236,33 @@ const QRPreview = ({
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [pixelData, setPixelData] = useState<PixelData | null>(null);
+  const [isProcessingPixels, setIsProcessingPixels] = useState(false);
+
+  // Process pixel match image when it changes
+  useEffect(() => {
+    if (config.pixelMatchEnabled && config.pixelMatchImage) {
+      setIsProcessingPixels(true);
+      const qrMatrixSize = getQRMatrixSize(config.data);
+
+      processImageForPixelMatching(config.pixelMatchImage, qrMatrixSize)
+        .then((data) => {
+          setPixelData(data);
+          setIsProcessingPixels(false);
+        })
+        .catch((error) => {
+          console.error("Error processing pixel match image:", error);
+          setIsProcessingPixels(false);
+        });
+    } else {
+      setPixelData(null);
+    }
+  }, [
+    config.pixelMatchImage,
+    config.pixelMatchEnabled,
+    config.data,
+    config.pixelMatchResolution,
+  ]);
 
   // Handle QR ready callback to get canvas reference for downloads
   const handleQrReady = (canvas: HTMLCanvasElement) => {
@@ -291,6 +326,68 @@ const QRPreview = ({
       link.click();
     }
     onDownload(format);
+  };
+
+  // Helper function to render QR code based on pixel matching settings
+  const renderQRCode = () => {
+    // Show loading state while processing pixels
+    if (
+      config.pixelMatchEnabled &&
+      config.pixelMatchImage &&
+      isProcessingPixels
+    ) {
+      return (
+        <div
+          className="flex items-center justify-center bg-gray-100 rounded-lg"
+          style={{ width: config.size, height: config.size }}
+        >
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+            <p className="text-sm">Processing pixels...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Use pixel matching if enabled and pixel data is available
+    if (config.pixelMatchEnabled && pixelData && config.pixelMatchImage) {
+      return (
+        <PixelMatchQR
+          config={config}
+          pixelData={pixelData}
+          logoDataUrl={logoDataUrl}
+          onReady={handleQrReady}
+        />
+      );
+    }
+
+    // Default to standard QR code
+    return (
+      <QrcodeCanvas
+        value={config.data}
+        size={config.size}
+        margin={config.margin}
+        color={qrColor}
+        variant={qrVariant}
+        colorEffect={config.colorEffect}
+        divider={config.divider}
+        bgColor={
+          config.backgroundTransparent ? "transparent" : config.backgroundColor
+        }
+        bgRounded={config.bgRounded}
+        image={
+          logoDataUrl
+            ? {
+                src: logoDataUrl,
+                width: config.size * config.logoSize,
+                height: config.size * config.logoSize,
+                overlap: true,
+              }
+            : undefined
+        }
+        onReady={handleQrReady}
+      />
+    );
   };
 
   const togglePreviewMode = () => {
@@ -378,32 +475,7 @@ const QRPreview = ({
               {config.frameStyle === "scan-me" && (
                 <>
                   <div className="relative p-4 border-4 border-black rounded-2xl bg-white shadow-inner">
-                    <QrcodeCanvas
-                      value={config.data}
-                      size={config.size}
-                      margin={config.margin}
-                      color={qrColor}
-                      variant={qrVariant}
-                      colorEffect={config.colorEffect}
-                      divider={config.divider}
-                      bgColor={
-                        config.backgroundTransparent
-                          ? "transparent"
-                          : config.backgroundColor
-                      }
-                      bgRounded={config.bgRounded}
-                      image={
-                        logoDataUrl
-                          ? {
-                              src: logoDataUrl,
-                              width: config.size * config.logoSize,
-                              height: config.size * config.logoSize,
-                              overlap: true,
-                            }
-                          : undefined
-                      }
-                      onReady={handleQrReady}
-                    />
+                    {renderQRCode()}
                   </div>
                   <div className="mt-2 px-4 py-2 bg-black text-white rounded-b-xl font-bold text-lg shadow-lg relative -top-2">
                     {config.frameText || "SCAN ME"}
@@ -413,32 +485,7 @@ const QRPreview = ({
               {config.frameStyle === "speech-bubble" && (
                 <>
                   <div className="relative p-4 border-4 border-blue-400 rounded-2xl bg-white shadow-inner">
-                    <QrcodeCanvas
-                      value={config.data}
-                      size={config.size}
-                      margin={config.margin}
-                      color={qrColor}
-                      variant={qrVariant}
-                      colorEffect={config.colorEffect}
-                      divider={config.divider}
-                      bgColor={
-                        config.backgroundTransparent
-                          ? "transparent"
-                          : config.backgroundColor
-                      }
-                      bgRounded={config.bgRounded}
-                      image={
-                        logoDataUrl
-                          ? {
-                              src: logoDataUrl,
-                              width: config.size * config.logoSize,
-                              height: config.size * config.logoSize,
-                              overlap: true,
-                            }
-                          : undefined
-                      }
-                      onReady={handleQrReady}
-                    />
+                    {renderQRCode()}
                   </div>
                   <div className="relative mt-2">
                     <div className="inline-block px-4 py-2 bg-blue-400 text-white rounded-full font-bold text-lg shadow-lg relative">
@@ -451,32 +498,7 @@ const QRPreview = ({
               {config.frameStyle === "rounded-box" && (
                 <>
                   <div className="relative p-4 border-4 border-purple-400 rounded-2xl bg-white shadow-inner">
-                    <QrcodeCanvas
-                      value={config.data}
-                      size={config.size}
-                      margin={config.margin}
-                      color={qrColor}
-                      variant={qrVariant}
-                      colorEffect={config.colorEffect}
-                      divider={config.divider}
-                      bgColor={
-                        config.backgroundTransparent
-                          ? "transparent"
-                          : config.backgroundColor
-                      }
-                      bgRounded={config.bgRounded}
-                      image={
-                        logoDataUrl
-                          ? {
-                              src: logoDataUrl,
-                              width: config.size * config.logoSize,
-                              height: config.size * config.logoSize,
-                              overlap: true,
-                            }
-                          : undefined
-                      }
-                      onReady={handleQrReady}
-                    />
+                    {renderQRCode()}
                   </div>
                   <div className="mt-2 px-4 py-2 bg-purple-400 text-white rounded-xl font-bold text-lg shadow-lg">
                     {config.frameText || "SCAN ME"}
@@ -485,62 +507,12 @@ const QRPreview = ({
               )}
               {config.frameStyle === "border" && (
                 <div className="relative p-4 border-4 border-gray-400 rounded-2xl bg-white shadow-inner">
-                  <QrcodeCanvas
-                    value={config.data}
-                    size={config.size}
-                    margin={config.margin}
-                    color={qrColor}
-                    variant={qrVariant}
-                    colorEffect={config.colorEffect}
-                    divider={config.divider}
-                    bgColor={
-                      config.backgroundTransparent
-                        ? "transparent"
-                        : config.backgroundColor
-                    }
-                    bgRounded={config.bgRounded}
-                    image={
-                      logoDataUrl
-                        ? {
-                            src: logoDataUrl,
-                            width: config.size * config.logoSize,
-                            height: config.size * config.logoSize,
-                            overlap: true,
-                          }
-                        : undefined
-                    }
-                    onReady={handleQrReady}
-                  />
+                  {renderQRCode()}
                 </div>
               )}
               {config.frameStyle === "none" && (
                 <div className="relative p-4 rounded-2xl bg-white shadow-inner">
-                  <QrcodeCanvas
-                    value={config.data}
-                    size={config.size}
-                    margin={config.margin}
-                    color={qrColor}
-                    variant={qrVariant}
-                    colorEffect={config.colorEffect}
-                    divider={config.divider}
-                    bgColor={
-                      config.backgroundTransparent
-                        ? "transparent"
-                        : config.backgroundColor
-                    }
-                    bgRounded={config.bgRounded}
-                    image={
-                      logoDataUrl
-                        ? {
-                            src: logoDataUrl,
-                            width: config.size * config.logoSize,
-                            height: config.size * config.logoSize,
-                            overlap: true,
-                          }
-                        : undefined
-                    }
-                    onReady={handleQrReady}
-                  />
+                  {renderQRCode()}
                 </div>
               )}
             </div>

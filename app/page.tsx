@@ -33,9 +33,16 @@ const defaultConfig: QRConfig = {
   // New image preview defaults
   previewMode: "qr-only",
   previewImage: null,
+  previewTemplate: "none",
   qrPositionX: 50,
   qrPositionY: 50,
   qrScale: 1,
+  // Pixel matching defaults
+  pixelMatchEnabled: false,
+  pixelMatchImage: null,
+  pixelMatchOpacity: 0.8,
+  pixelMatchBlending: "normal",
+  pixelMatchResolution: 25,
 };
 
 export default function Home() {

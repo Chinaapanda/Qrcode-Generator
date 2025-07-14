@@ -9,6 +9,7 @@ A modern, customizable QR Code generator built with Next.js and Tailwind CSS. Cr
 - 🖼️ **Logo Integration**: Upload PNG/JPG/SVG logos and embed them in your QR codes
 - 🎯 **Multiple Shapes**: Square, rounded, dots, and extra-rounded dot shapes
 - 🌈 **Color Customization**: Full color picker support for all elements
+- 🖼️ **Pixel Matching**: Upload an image and match each QR code dot with corresponding pixel colors
 - 📱 **Responsive Design**: Works perfectly on desktop and mobile
 - 💾 **Auto-Save**: Your configurations are automatically saved to localStorage
 - 📥 **Download Options**: Export as PNG (with transparency support) or SVG
@@ -60,7 +61,11 @@ npm run dev
    - Pick colors for dots, corner eyes, and background
    - Choose dot shapes and corner eye styles
 3. **Add a logo** (optional): Upload an image and adjust its size and margin
-4. **Download**: Export your QR code as PNG or SVG
+4. **Pixel Matching** (new feature):
+   - Upload an image for pixel matching
+   - Each QR code dot will match the color of the corresponding pixel in your image
+   - Adjust opacity, resolution, and blending modes for perfect results
+5. **Download**: Export your QR code as PNG or SVG
 
 ## Customization Options
 
