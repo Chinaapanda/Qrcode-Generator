@@ -19,7 +19,8 @@ const RangeControl = ({
   unit = "",
   onChange,
 }: RangeControlProps) => {
-  const { isDark } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div>

@@ -2,7 +2,8 @@ import { ColorPickerProps } from "@/lib/types";
 import { useTheme } from "./ThemeProvider";
 
 const ColorPicker = ({ color, onChange, label }: ColorPickerProps) => {
-  const { isDark } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div className="space-y-2">

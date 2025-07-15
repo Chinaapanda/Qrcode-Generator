@@ -1,5 +1,3 @@
-import { useTheme } from "../ThemeProvider";
-
 export interface ButtonGridOption {
   value: string;
   label: string;
@@ -19,8 +17,6 @@ const ButtonGrid = ({
   onChange,
   columns = 4,
 }: ButtonGridProps) => {
-  const { isDark } = useTheme();
-
   // Create proper grid class mapping
   const getGridCols = (cols: number) => {
     switch (cols) {
@@ -48,10 +44,8 @@ const ButtonGrid = ({
           key={option.value}
           className={`w-full h-12 flex flex-col items-center justify-center rounded-lg border text-xs transition-all duration-200 ${
             value === option.value
-              ? "bg-blue-500 border-blue-600 shadow text-white"
-              : isDark
-              ? "bg-gray-700 border-gray-600 hover:bg-gray-600 text-gray-200 hover:border-gray-500"
-              : "bg-white border-gray-300 hover:bg-gray-50 text-gray-700 hover:border-gray-400"
+              ? "bg-primary text-primary-foreground border-primary shadow-md"
+              : "bg-background border-border hover:bg-accent text-foreground hover:border-accent-foreground/20"
           }`}
           onClick={() => onChange(option.value)}
           type="button"
