@@ -37,23 +37,6 @@ const MoonIcon = () => (
   </svg>
 );
 
-const SystemIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-4 h-4"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
-    />
-  </svg>
-);
-
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -70,39 +53,15 @@ export function ThemeToggle() {
   }
 
   const cycleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
-    } else {
-      setTheme("light");
-    }
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   const getIcon = () => {
-    switch (theme) {
-      case "light":
-        return <SunIcon />;
-      case "dark":
-        return <MoonIcon />;
-      case "system":
-        return <SystemIcon />;
-      default:
-        return <SystemIcon />;
-    }
+    return theme === "light" ? <SunIcon /> : <MoonIcon />;
   };
 
   const getTooltip = () => {
-    switch (theme) {
-      case "light":
-        return "Switch to dark mode";
-      case "dark":
-        return "Switch to system mode";
-      case "system":
-        return "Switch to light mode";
-      default:
-        return "Switch theme";
-    }
+    return theme === "light" ? "Switch to dark mode" : "Switch to light mode";
   };
 
   return (
@@ -131,9 +90,6 @@ export function ThemeToggle() {
         )}
         {theme === "dark" && (
           <div className="w-full h-full bg-blue-600 rounded-full" />
-        )}
-        {theme === "system" && (
-          <div className="w-full h-full bg-gray-500 rounded-full" />
         )}
       </div>
     </button>
