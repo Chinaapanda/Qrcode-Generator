@@ -1,3 +1,5 @@
+import { useTheme } from "../ThemeProvider";
+
 interface RangeControlProps {
   label: string;
   value: number;
@@ -16,26 +18,36 @@ const RangeControl = ({
   step = 1,
   unit = "",
   onChange,
-}: RangeControlProps) => (
-  <div>
-    <label className="block text-xs font-medium text-gray-600 mb-1">
-      {label}: {step < 1 ? (value * 100).toFixed(0) : value}
-      {unit}
-    </label>
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) =>
-        onChange(
-          step < 1 ? parseFloat(e.target.value) : parseInt(e.target.value)
-        )
-      }
-      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-    />
-  </div>
-);
+}: RangeControlProps) => {
+  const { isDark } = useTheme();
+
+  return (
+    <div>
+      <label
+        className={`block text-xs font-medium mb-1 ${
+          isDark ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        {label}: {step < 1 ? (value * 100).toFixed(0) : value}
+        {unit}
+      </label>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) =>
+          onChange(
+            step < 1 ? parseFloat(e.target.value) : parseInt(e.target.value)
+          )
+        }
+        className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider ${
+          isDark ? "bg-gray-700" : "bg-gray-200"
+        }`}
+      />
+    </div>
+  );
+};
 
 export default RangeControl;
