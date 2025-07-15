@@ -2,91 +2,107 @@
 
 import { DownloadFormat, QRGeneratorProps } from "@/lib/types";
 import { Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useFileUpload } from "../hooks/useFileUpload";
+import { useQRModes } from "../hooks/useQRModes";
 import ColorPicker from "./ColorPicker";
 import QRPreview from "./QRPreview";
+import ButtonGrid, { ButtonGridOption } from "./ui/ButtonGrid";
+import ControlSection from "./ui/ControlSection";
+import ModeWarning from "./ui/ModeWarning";
+import RangeControl from "./ui/RangeControl";
+import ToggleControl from "./ui/ToggleControl";
 
 const QRCodeGenerator = ({
   config,
   updateConfig,
   resetConfig,
 }: QRGeneratorProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const pixelMatchImageInputRef = useRef<HTMLInputElement>(null);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [pixelMatchImageUrl, setPixelMatchImageUrl] = useState<string | null>(
     null
   );
 
-  // Handle logo upload
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setLogoDataUrl(dataUrl);
-        updateConfig({ logo: file });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // Use custom hooks
+  const {
+    isPixelMatchMode,
+    hasAdvancedStyling,
+    disablePixelMatching,
+    disableAdvancedStyling,
+  } = useQRModes({ config, updateConfig });
 
-  // Handle pixel match image upload
-  const handlePixelMatchImageUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setPixelMatchImageUrl(dataUrl);
-        updateConfig({ pixelMatchImage: file, pixelMatchEnabled: true });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const logoUpload = useFileUpload({
+    onFileSelect: (file, dataUrl) => {
+      setLogoDataUrl(dataUrl);
+      updateConfig({ logo: file });
+    },
+    onFileRemove: () => {
+      setLogoDataUrl(null);
+      updateConfig({ logo: null });
+    },
+  });
 
-  // Remove logo
-  const removeLogo = () => {
-    setLogoDataUrl(null);
-    updateConfig({ logo: null });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  const pixelMatchUpload = useFileUpload({
+    onFileSelect: (file, dataUrl) => {
+      setPixelMatchImageUrl(dataUrl);
+      updateConfig({ pixelMatchImage: file, pixelMatchEnabled: true });
+    },
+    onFileRemove: () => {
+      setPixelMatchImageUrl(null);
+      updateConfig({ pixelMatchImage: null, pixelMatchEnabled: false });
+    },
+  });
 
-  // Remove pixel match image
-  const removePixelMatchImage = () => {
-    setPixelMatchImageUrl(null);
-    updateConfig({ pixelMatchImage: null, pixelMatchEnabled: false });
-    if (pixelMatchImageInputRef.current) {
-      pixelMatchImageInputRef.current.value = "";
-    }
-  };
-
-  // Download QR code (placeholder - actual download handled in QRPreview)
   const downloadQR = (format: DownloadFormat) => {
-    // This is handled by QRPreview component
+    // Handled by QRPreview component
   };
 
-  const dotShapeOptions = [
-    { value: "square", label: "Square" },
-    { value: "dots", label: "Dots" },
-    { value: "rounded", label: "Rounded" },
-    { value: "extra-rounded", label: "Extra Rounded" },
+  // Button grid options
+  const qrVariantOptions: ButtonGridOption[] = [
+    { value: "standard", label: "■", desc: "Standard" },
+    { value: "rounded", label: "◼", desc: "Rounded" },
+    { value: "dots", label: "●", desc: "Dots" },
+    { value: "circle", label: "○", desc: "Circle" },
+    { value: "fluid", label: "~", desc: "Fluid" },
+    { value: "gravity", label: "▼", desc: "Gravity" },
+    { value: "morse", label: "⫿", desc: "Morse" },
+    { value: "shower", label: "⫶", desc: "Shower" },
   ];
 
-  const cornerEyeStyleOptions = [
-    { value: "square", label: "Square" },
-    { value: "dot", label: "Dot" },
-    { value: "extra-rounded", label: "Extra Rounded" },
+  const eyeVariantOptions: ButtonGridOption[] = [
+    { value: "standard", label: "👁", desc: "Standard" },
+    { value: "rounded", label: "⬯", desc: "Rounded" },
+    { value: "dots", label: "⚬", desc: "Dots" },
+    { value: "circle", label: "○", desc: "Circle" },
+    { value: "fluid", label: "~", desc: "Fluid" },
+    { value: "gravity", label: "▼", desc: "Gravity" },
+  ];
+
+  const colorEffectOptions: ButtonGridOption[] = [
+    { value: "none", label: "○", desc: "None" },
+    { value: "gradient-dark-vertical", label: "🌓", desc: "Dark ↕" },
+    { value: "gradient-light-horizontal", label: "🌞", desc: "Light ↔" },
+    { value: "colored", label: "🌈", desc: "Colored" },
+    { value: "shades", label: "🎨", desc: "Shades" },
+  ];
+
+  const frameOptions: ButtonGridOption[] = [
+    { value: "none", label: "⬜", desc: "None" },
+    { value: "scan-me", label: "📱", desc: "Scan Me" },
+    { value: "speech-bubble", label: "💬", desc: "Speech" },
+    { value: "rounded-box", label: "⭕", desc: "Rounded" },
+    { value: "border", label: "⬛", desc: "Border" },
+  ];
+
+  const blendingOptions: ButtonGridOption[] = [
+    { value: "normal", label: "N", desc: "Normal" },
+    { value: "multiply", label: "M", desc: "Multiply" },
+    { value: "overlay", label: "O", desc: "Overlay" },
+    { value: "screen", label: "S", desc: "Screen" },
   ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-      {/* QR Code Preview */}
       <QRPreview
         config={config}
         logoDataUrl={logoDataUrl}
@@ -96,7 +112,6 @@ const QRCodeGenerator = ({
         onUpdateConfig={updateConfig}
       />
 
-      {/* Controls Panel */}
       <div className="card p-8 space-y-8 relative overflow-hidden lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:sticky lg:top-8 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100 to-purple-100 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
@@ -108,11 +123,16 @@ const QRCodeGenerator = ({
           <div className="h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 w-16 rounded-full"></div>
         </div>
 
+        {/* Mode warnings */}
+        {isPixelMatchMode && (
+          <ModeWarning mode="pixel" onDisable={disablePixelMatching} />
+        )}
+        {!isPixelMatchMode && hasAdvancedStyling && (
+          <ModeWarning mode="styling" onDisable={disableAdvancedStyling} />
+        )}
+
         {/* Data Input */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
-            📝 Data (Text/URL)
-          </label>
+        <ControlSection title="Data (Text/URL)" icon="📝">
           <div className="relative">
             <textarea
               value={config.data}
@@ -125,386 +145,265 @@ const QRCodeGenerator = ({
               {config.data.length} characters
             </div>
           </div>
-        </div>
-
-        {/* Pixel Match Image Upload */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
-            🎨 Pixel Match Image
-          </label>
-          <p className="text-xs text-gray-600 mb-3">
-            Upload an image to match QR code dots with image pixels. Each QR dot
-            will take the color of the corresponding pixel.
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={() => pixelMatchImageInputRef.current?.click()}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-300 group"
-            >
-              <Upload
-                size={20}
-                className="text-gray-400 group-hover:text-purple-500"
-              />
-              <span className="text-gray-600 group-hover:text-purple-600">
-                Upload Pixel Match Image
-              </span>
-            </button>
-            <input
-              ref={pixelMatchImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePixelMatchImageUpload}
-              className="hidden"
-            />
-            {pixelMatchImageUrl && (
-              <div className="relative">
-                <img
-                  src={pixelMatchImageUrl}
-                  alt="Pixel match"
-                  className="w-full h-24 object-cover rounded-lg border"
-                />
-                <button
-                  onClick={removePixelMatchImage}
-                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Pixel Match Controls (only show when pixel match image is uploaded) */}
-        {config.pixelMatchEnabled && config.pixelMatchImage && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-800">
-              🎯 Pixel Matching Settings
-            </h3>
-
-            <div className="space-y-3">
-              {/* Enable/Disable Toggle */}
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-600">
-                  Enable Pixel Matching
-                </label>
-                <button
-                  onClick={() =>
-                    updateConfig({
-                      pixelMatchEnabled: !config.pixelMatchEnabled,
-                    })
-                  }
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    config.pixelMatchEnabled ? "bg-purple-600" : "bg-gray-200"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      config.pixelMatchEnabled
-                        ? "translate-x-6"
-                        : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Opacity Control */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Pixel Opacity: {(config.pixelMatchOpacity * 100).toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value={config.pixelMatchOpacity}
-                  onChange={(e) =>
-                    updateConfig({
-                      pixelMatchOpacity: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Resolution Control */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Resolution: {config.pixelMatchResolution}x
-                  {config.pixelMatchResolution}
-                </label>
-                <input
-                  type="range"
-                  min="15"
-                  max="50"
-                  step="5"
-                  value={config.pixelMatchResolution}
-                  onChange={(e) =>
-                    updateConfig({
-                      pixelMatchResolution: parseInt(e.target.value),
-                    })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Blending Mode */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">
-                  Blending Mode
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: "normal", label: "Normal" },
-                    { value: "multiply", label: "Multiply" },
-                    { value: "overlay", label: "Overlay" },
-                    { value: "screen", label: "Screen" },
-                  ].map((mode) => (
-                    <button
-                      key={mode.value}
-                      className={`px-3 py-1 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                        config.pixelMatchBlending === mode.value
-                          ? "bg-purple-500 text-white border-purple-600 shadow"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-purple-50"
-                      }`}
-                      onClick={() =>
-                        updateConfig({ pixelMatchBlending: mode.value as any })
-                      }
-                      type="button"
-                    >
-                      {mode.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </ControlSection>
 
         {/* Size Controls */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-800">
-            📐 Size Settings
-          </h3>
+        <ControlSection title="Size Settings" icon="📐">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Size: {config.size}px
-              </label>
-              <input
-                type="range"
-                min="200"
-                max="800"
-                value={config.size}
-                onChange={(e) =>
-                  updateConfig({ size: parseInt(e.target.value) })
-                }
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Margin: {config.margin}px
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="50"
-                value={config.margin}
-                onChange={(e) =>
-                  updateConfig({ margin: parseInt(e.target.value) })
-                }
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
+            <RangeControl
+              label="Size"
+              value={config.size}
+              min={200}
+              max={800}
+              unit="px"
+              onChange={(size) => updateConfig({ size })}
+            />
+            <RangeControl
+              label="Margin"
+              value={config.margin}
+              min={0}
+              max={50}
+              unit="px"
+              onChange={(margin) => updateConfig({ margin })}
+            />
           </div>
-        </div>
+        </ControlSection>
 
-        {/* Color Controls */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-800">🎨 Colors</h3>
+        {/* Colors */}
+        <ControlSection title="Colors" icon="🎨">
           <div className="grid grid-cols-2 gap-4">
             <ColorPicker
               color={config.dotColor}
-              onChange={(color) => updateConfig({ dotColor: color })}
-              label="Dots"
+              onChange={(dotColor) => updateConfig({ dotColor })}
+              label="QR Code Color"
             />
             <ColorPicker
               color={config.backgroundColor}
-              onChange={(color) => updateConfig({ backgroundColor: color })}
-              label="Background"
+              onChange={(backgroundColor) => updateConfig({ backgroundColor })}
+              label="Background Color"
             />
             <ColorPicker
               color={config.cornerEyeColor}
-              onChange={(color) => updateConfig({ cornerEyeColor: color })}
-              label="Corner Eyes"
+              onChange={(cornerEyeColor) => updateConfig({ cornerEyeColor })}
+              label="Corner Eye Color"
             />
             <ColorPicker
               color={config.cornerEyeInnerColor}
-              onChange={(color) => updateConfig({ cornerEyeInnerColor: color })}
-              label="Eye Centers"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="transparent-bg"
-              checked={config.backgroundTransparent}
-              onChange={(e) =>
-                updateConfig({ backgroundTransparent: e.target.checked })
+              onChange={(cornerEyeInnerColor) =>
+                updateConfig({ cornerEyeInnerColor })
               }
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              label="Corner Eye Inner"
             />
-            <label htmlFor="transparent-bg" className="text-sm text-gray-700">
-              Transparent Background
-            </label>
           </div>
-        </div>
+          <ToggleControl
+            id="bg-transparent"
+            label="Transparent background"
+            checked={config.backgroundTransparent}
+            onChange={(backgroundTransparent) =>
+              updateConfig({ backgroundTransparent })
+            }
+          />
+        </ControlSection>
 
-        {/* QR Styling Controls */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-800">✨ QR Styling</h3>
-
-          {/* QR Variant */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              QR Body Style
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { value: "standard", label: "■", desc: "Standard" },
-                { value: "rounded", label: "◼", desc: "Rounded" },
-                { value: "dots", label: "●", desc: "Dots" },
-                { value: "circle", label: "○", desc: "Circle" },
-                { value: "fluid", label: "~", desc: "Fluid" },
-                { value: "gravity", label: "▼", desc: "Gravity" },
-                { value: "morse", label: "⫿", desc: "Morse" },
-                { value: "shower", label: "⫶", desc: "Shower" },
-              ].map((variant) => (
-                <button
-                  key={variant.value}
-                  className={`w-full h-12 flex flex-col items-center justify-center rounded-lg border text-xs transition-all duration-200 ${
-                    config.qrVariant === variant.value
-                      ? "bg-blue-500 border-blue-600 shadow text-white"
-                      : "bg-white border-gray-300 hover:bg-blue-50 text-gray-700"
-                  }`}
-                  onClick={() =>
-                    updateConfig({ qrVariant: variant.value as any })
-                  }
-                  type="button"
-                  title={variant.desc}
-                >
-                  <span className="text-lg">{variant.label}</span>
-                  <span className="text-xs mt-1">{variant.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Eye Variant */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              Corner Eye Style
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { value: "standard", label: "▣", desc: "Standard" },
-                { value: "rounded", label: "▢", desc: "Rounded" },
-                { value: "dots", label: "◉", desc: "Dots" },
-                { value: "circle", label: "◯", desc: "Circle" },
-                { value: "fluid", label: "⬚", desc: "Fluid" },
-                { value: "gravity", label: "⬇", desc: "Gravity" },
-              ].map((variant) => (
-                <button
-                  key={variant.value}
-                  className={`w-full h-12 flex flex-col items-center justify-center rounded-lg border text-xs transition-all duration-200 ${
-                    config.eyeVariant === variant.value
-                      ? "bg-purple-500 border-purple-600 shadow text-white"
-                      : "bg-white border-gray-300 hover:bg-purple-50 text-gray-700"
-                  }`}
-                  onClick={() =>
-                    updateConfig({ eyeVariant: variant.value as any })
-                  }
-                  type="button"
-                  title={variant.desc}
-                >
-                  <span className="text-lg">{variant.label}</span>
-                  <span className="text-xs mt-1">{variant.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Color Effects */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              Color Effects
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: "none", label: "None" },
-                { value: "gradient-dark-vertical", label: "Gradient ↕" },
-                { value: "gradient-dark-horizontal", label: "Gradient ↔" },
-                { value: "gradient-dark-diagonal", label: "Gradient ↗" },
-                { value: "colored", label: "Colored" },
-                { value: "shades", label: "Shades" },
-              ].map((effect) => (
-                <button
-                  key={effect.value}
-                  className={`px-2 py-1 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                    config.colorEffect === effect.value
-                      ? "bg-emerald-500 text-white border-emerald-600 shadow"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-emerald-50"
-                  }`}
-                  onClick={() =>
-                    updateConfig({ colorEffect: effect.value as any })
-                  }
-                  type="button"
-                >
-                  {effect.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Style Options */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="divider"
-                checked={config.divider}
-                onChange={(e) => updateConfig({ divider: e.target.checked })}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="divider" className="text-sm text-gray-700">
-                Add separation between dots
+        {/* Frame Customization */}
+        <ControlSection title="Frame Style" icon="🖼️">
+          <ButtonGrid
+            options={frameOptions}
+            value={config.frameStyle}
+            onChange={(frameStyle) =>
+              updateConfig({ frameStyle: frameStyle as any })
+            }
+            columns={5}
+          />
+          {config.frameStyle !== "none" && config.frameStyle !== "border" && (
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Frame Text
               </label>
-            </div>
-            <div className="flex items-center space-x-2">
               <input
-                type="checkbox"
-                id="bg-rounded"
-                checked={config.bgRounded}
-                onChange={(e) => updateConfig({ bgRounded: e.target.checked })}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                type="text"
+                value={config.frameText}
+                onChange={(e) => updateConfig({ frameText: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter frame text..."
               />
-              <label htmlFor="bg-rounded" className="text-sm text-gray-700">
-                Rounded background
-              </label>
             </div>
-          </div>
-        </div>
+          )}
+        </ControlSection>
 
-        {/* Logo Upload */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
-            📸 Logo (Optional)
-          </label>
+        {/* Pixel Match Image Upload */}
+        <ControlSection title="Pixel Match Image" icon="🎭">
           <div className="space-y-3">
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={pixelMatchUpload.triggerFileUpload}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-purple-300 rounded-xl hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-300 group"
+            >
+              <Upload
+                size={20}
+                className="text-purple-400 group-hover:text-purple-500"
+              />
+              <span className="text-purple-600 group-hover:text-purple-700">
+                Upload Image for Pixel Matching
+              </span>
+            </button>
+            <input
+              ref={pixelMatchUpload.fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={pixelMatchUpload.handleFileUpload}
+              className="hidden"
+            />
+
+            {pixelMatchImageUrl && (
+              <div className="relative bg-gray-50 rounded-xl p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={pixelMatchImageUrl}
+                      alt="Pixel match preview"
+                      className="w-12 h-12 object-cover rounded-lg"
+                    />
+                    <span className="text-sm text-gray-600">
+                      Pixel match image uploaded
+                    </span>
+                  </div>
+                  <button
+                    onClick={pixelMatchUpload.removeFile}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {config.pixelMatchEnabled && config.pixelMatchImage && (
+              <div className="space-y-3 pt-3 border-t border-gray-200">
+                <ToggleControl
+                  id="pixel-match-enabled"
+                  label="Enable Pixel Matching"
+                  checked={config.pixelMatchEnabled}
+                  onChange={(pixelMatchEnabled) =>
+                    updateConfig({ pixelMatchEnabled })
+                  }
+                />
+                <div className="grid grid-cols-1 gap-3">
+                  <RangeControl
+                    label="Pixel Opacity"
+                    value={config.pixelMatchOpacity}
+                    min={0.1}
+                    max={1}
+                    step={0.1}
+                    unit="%"
+                    onChange={(pixelMatchOpacity) =>
+                      updateConfig({ pixelMatchOpacity })
+                    }
+                  />
+                  <RangeControl
+                    label="Resolution"
+                    value={config.pixelMatchResolution}
+                    min={15}
+                    max={50}
+                    step={5}
+                    unit="x"
+                    onChange={(pixelMatchResolution) =>
+                      updateConfig({ pixelMatchResolution })
+                    }
+                  />
+                </div>
+
+                {/* Blending Mode */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">
+                    Blending Mode
+                  </label>
+                  <ButtonGrid
+                    options={blendingOptions}
+                    value={config.pixelMatchBlending}
+                    onChange={(pixelMatchBlending) =>
+                      updateConfig({
+                        pixelMatchBlending: pixelMatchBlending as any,
+                      })
+                    }
+                    columns={4}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </ControlSection>
+
+        {!isPixelMatchMode && (
+          <ControlSection title="Advanced QR Styling" icon="✨">
+            <div className="space-y-4">
+              {/* QR Variant */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  QR Body Style
+                </label>
+                <ButtonGrid
+                  options={qrVariantOptions}
+                  value={config.qrVariant}
+                  onChange={(qrVariant) =>
+                    updateConfig({ qrVariant: qrVariant as any })
+                  }
+                  columns={4}
+                />
+              </div>
+
+              {/* Eye Variant */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Corner Eye Style
+                </label>
+                <ButtonGrid
+                  options={eyeVariantOptions}
+                  value={config.eyeVariant}
+                  onChange={(eyeVariant) =>
+                    updateConfig({ eyeVariant: eyeVariant as any })
+                  }
+                  columns={3}
+                />
+              </div>
+
+              {/* Color Effects */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Color Effects
+                </label>
+                <ButtonGrid
+                  options={colorEffectOptions}
+                  value={config.colorEffect}
+                  onChange={(colorEffect) =>
+                    updateConfig({ colorEffect: colorEffect as any })
+                  }
+                  columns={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <ToggleControl
+                  id="divider"
+                  label="Add separation between dots"
+                  checked={config.divider}
+                  onChange={(divider) => updateConfig({ divider })}
+                />
+                <ToggleControl
+                  id="bg-rounded"
+                  label="Rounded background"
+                  checked={config.bgRounded}
+                  onChange={(bgRounded) => updateConfig({ bgRounded })}
+                />
+              </div>
+            </div>
+          </ControlSection>
+        )}
+
+        {/* Logo Upload */}
+        <ControlSection title="Logo (Optional)" icon="📸">
+          <div className="space-y-3">
+            <button
+              onClick={logoUpload.triggerFileUpload}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group"
             >
               <Upload
@@ -516,105 +415,74 @@ const QRCodeGenerator = ({
               </span>
             </button>
             <input
-              ref={fileInputRef}
+              ref={logoUpload.fileInputRef}
               type="file"
               accept="image/*"
-              onChange={handleLogoUpload}
+              onChange={logoUpload.handleFileUpload}
               className="hidden"
             />
+
             {logoDataUrl && (
-              <div className="relative">
-                <img
-                  src={logoDataUrl}
-                  alt="Logo preview"
-                  className="w-full h-24 object-contain rounded-lg border bg-gray-50"
+              <div className="relative bg-gray-50 rounded-xl p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={logoDataUrl}
+                      alt="Logo preview"
+                      className="w-12 h-12 object-cover rounded-lg"
+                    />
+                    <span className="text-sm text-gray-600">Logo uploaded</span>
+                  </div>
+                  <button
+                    onClick={logoUpload.removeFile}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {logoDataUrl && (
+              <div className="space-y-3 pt-3 border-t border-gray-200">
+                <RangeControl
+                  label="Logo Size"
+                  value={config.logoSize}
+                  min={0.1}
+                  max={0.5}
+                  step={0.05}
+                  unit="%"
+                  onChange={(logoSize) => updateConfig({ logoSize })}
                 />
-                <button
-                  onClick={removeLogo}
-                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                >
-                  <X size={16} />
-                </button>
+                <RangeControl
+                  label="Logo Corner Radius"
+                  value={config.logoCornerRadius}
+                  min={0}
+                  max={20}
+                  unit="px"
+                  onChange={(logoCornerRadius) =>
+                    updateConfig({ logoCornerRadius })
+                  }
+                />
+                <ColorPicker
+                  color={config.logoBackgroundColor}
+                  onChange={(logoBackgroundColor) =>
+                    updateConfig({ logoBackgroundColor })
+                  }
+                  label="Logo Background Color"
+                />
+                <ToggleControl
+                  id="logo-bg-transparent"
+                  label="Transparent logo background"
+                  checked={config.logoBackgroundTransparent}
+                  onChange={(logoBackgroundTransparent) =>
+                    updateConfig({ logoBackgroundTransparent })
+                  }
+                />
               </div>
             )}
           </div>
-
-          {/* Logo Size Control */}
-          {logoDataUrl && (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Logo Size: {(config.logoSize * 100).toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="0.8"
-                  step="0.1"
-                  value={config.logoSize}
-                  onChange={(e) =>
-                    updateConfig({ logoSize: parseFloat(e.target.value) })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Logo Margin: {config.logoMargin}px
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="30"
-                  value={config.logoMargin}
-                  onChange={(e) =>
-                    updateConfig({ logoMargin: parseInt(e.target.value) })
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Frame Controls */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
-            🖼️ Frame
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { value: "none", label: "None" },
-              { value: "scan-me", label: "Scan Me" },
-              { value: "speech-bubble", label: "Speech Bubble" },
-              { value: "rounded-box", label: "Rounded Box" },
-              { value: "border", label: "Border" },
-            ].map((frame) => (
-              <button
-                key={frame.value}
-                className={`px-3 py-1 rounded-lg border text-sm font-medium transition-all duration-200 ${
-                  config.frameStyle === frame.value
-                    ? "bg-blue-500 text-white border-blue-600 shadow"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
-                }`}
-                onClick={() => updateConfig({ frameStyle: frame.value as any })}
-                type="button"
-              >
-                {frame.label}
-              </button>
-            ))}
-          </div>
-          {config.frameStyle !== "none" && (
-            <input
-              type="text"
-              value={config.frameText}
-              onChange={(e) => updateConfig({ frameText: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg mt-2 text-sm"
-              placeholder="Frame text (e.g. SCAN ME)"
-              maxLength={24}
-            />
-          )}
-        </div>
+        </ControlSection>
       </div>
     </div>
   );
