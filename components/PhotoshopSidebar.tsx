@@ -7,12 +7,10 @@ import {
   Frame,
   Image,
   Layers,
-  Moon,
   Palette,
   Settings,
   Sparkles,
   Square,
-  Sun,
   Upload,
   X,
 } from "lucide-react";
@@ -20,9 +18,9 @@ import { useState } from "react";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useQRModes } from "../hooks/useQRModes";
 import ColorPicker from "./ColorPicker";
-import { useTheme } from "./ThemeProvider";
 import ButtonGrid, { ButtonGridOption } from "./ui/ButtonGrid";
 import RangeControl from "./ui/RangeControl";
+import { ThemeToggle } from "./ui/ThemeToggle";
 import ToggleControl from "./ui/ToggleControl";
 
 interface PhotoshopSidebarProps {
@@ -44,45 +42,24 @@ interface PanelProps {
 
 const Panel = ({ title, icon, children, defaultOpen = true }: PanelProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const { isDark } = useTheme();
 
   return (
-    <div
-      className={`border-b ${isDark ? "border-gray-700" : "border-gray-300"}`}
-    >
+    <div className="border-b border-border">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between p-3 transition-colors ${
-          isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"
-        }`}
+        className="w-full flex items-center justify-between p-3 transition-colors hover:bg-accent"
       >
         <div className="flex items-center space-x-2">
           {icon}
-          <span
-            className={`text-sm font-medium ${
-              isDark ? "text-gray-200" : "text-gray-800"
-            }`}
-          >
-            {title}
-          </span>
+          <span className="text-sm font-medium text-foreground">{title}</span>
         </div>
         {isOpen ? (
-          <ChevronDown
-            size={16}
-            className={isDark ? "text-gray-400" : "text-gray-600"}
-          />
+          <ChevronDown size={16} className="text-muted-foreground" />
         ) : (
-          <ChevronRight
-            size={16}
-            className={isDark ? "text-gray-400" : "text-gray-600"}
-          />
+          <ChevronRight size={16} className="text-muted-foreground" />
         )}
       </button>
-      {isOpen && (
-        <div className={`p-3 ${isDark ? "bg-gray-800/50" : "bg-gray-50"}`}>
-          {children}
-        </div>
-      )}
+      {isOpen && <div className="p-3 bg-muted/50">{children}</div>}
     </div>
   );
 };
@@ -96,8 +73,6 @@ const PhotoshopSidebar = ({
   pixelMatchImageUrl,
   setPixelMatchImageUrl,
 }: PhotoshopSidebarProps) => {
-  const { isDark, toggleTheme } = useTheme();
-
   // Use custom hooks
   const {
     isPixelMatchMode,
@@ -172,72 +147,56 @@ const PhotoshopSidebar = ({
     { value: "screen", label: "S", desc: "Screen" },
   ];
 
-  const sidebarBg = isDark ? "bg-gray-900" : "bg-white";
-  const borderColor = isDark ? "border-gray-700" : "border-gray-200";
-  const textColor = isDark ? "text-white" : "text-gray-900";
-  const subtitleColor = isDark ? "text-gray-400" : "text-gray-600";
-
   return (
-    <div
-      className={`fixed right-0 top-0 h-screen w-80 ${sidebarBg} border-l ${borderColor} z-50 overflow-y-auto scrollbar-thin ${
-        isDark
-          ? "scrollbar-thumb-gray-600 scrollbar-track-gray-800"
-          : "scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-      }`}
-    >
+    <div className="fixed right-0 top-0 h-screen w-80 bg-background border-l border-border z-50 overflow-y-auto scrollbar-thin">
       {/* Header */}
-      <div className={`border-b ${borderColor} p-4`}>
+      <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Settings size={20} className="text-blue-400" />
-            <h2 className={`text-lg font-semibold ${textColor}`}>
+            <Settings size={20} className="text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">
               QR Customizer
             </h2>
           </div>
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-lg transition-colors ${
-              isDark
-                ? "hover:bg-gray-700 text-gray-300 hover:text-white"
-                : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-            }`}
-            title={`Switch to ${isDark ? "light" : "dark"} theme`}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <ThemeToggle />
         </div>
-        <p className={`text-xs ${subtitleColor} mt-1`}>
+        <p className="text-xs text-muted-foreground mt-1">
           Professional QR Code Designer
         </p>
       </div>
 
       {/* Mode warnings */}
       {isPixelMatchMode && (
-        <div
-          className={`${
-            isDark
-              ? "bg-purple-900/30 border-purple-700/50"
-              : "bg-purple-50 border-purple-200"
-          } border-b p-3`}
-        >
+        <div className="bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-700/50 border-b p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Layers size={14} className="text-purple-400" />
-              <span
-                className={`text-xs ${
-                  isDark ? "text-purple-200" : "text-purple-700"
-                }`}
-              >
+              <span className="text-xs text-purple-700 dark:text-purple-200">
                 Pixel Match Active
               </span>
             </div>
             <button
               onClick={disablePixelMatching}
-              className={`text-xs ${
-                isDark
-                  ? "text-purple-300 hover:text-purple-100"
-                  : "text-purple-600 hover:text-purple-800"
-              }`}
+              className="text-xs text-purple-600 dark:text-purple-300 hover:text-purple-800 dark:hover:text-purple-100"
+            >
+              Disable
+            </button>
+          </div>
+        </div>
+      )}
+
+      {hasAdvancedStyling && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700/50 border-b p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Sparkles size={14} className="text-blue-400" />
+              <span className="text-xs text-blue-700 dark:text-blue-200">
+                Advanced Styling Active
+              </span>
+            </div>
+            <button
+              onClick={disableAdvancedStyling}
+              className="text-xs text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100"
             >
               Disable
             </button>
@@ -246,41 +205,24 @@ const PhotoshopSidebar = ({
       )}
 
       {/* Panels */}
-      <div
-        className={`divide-y ${isDark ? "divide-gray-700" : "divide-gray-200"}`}
-      >
-        {/* Data Input Panel */}
+      <div className="divide-y divide-border">
+        {/* Data Panel */}
         <Panel
-          title="Content"
-          icon={<Settings size={16} className="text-blue-400" />}
+          title="Data & Content"
+          icon={<Square size={16} className="text-muted-foreground" />}
         >
           <div className="space-y-3">
             <div>
-              <label
-                className={`block text-xs font-medium ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                } mb-2`}
-              >
-                Data (Text/URL)
+              <label className="block text-xs font-medium text-foreground mb-1">
+                QR Code Data
               </label>
               <textarea
                 value={config.data}
                 onChange={(e) => updateConfig({ data: e.target.value })}
-                className={`w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  isDark
-                    ? "bg-gray-800 border-gray-600 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
+                className="control-panel input-field w-full p-2 text-sm resize-none"
+                placeholder="Enter text, URL, or data..."
                 rows={3}
-                placeholder="Enter your text, URL, or data..."
               />
-              <div
-                className={`text-xs ${
-                  isDark ? "text-gray-500" : "text-gray-400"
-                } mt-1`}
-              >
-                {config.data.length} characters
-              </div>
             </div>
           </div>
         </Panel>
@@ -361,9 +303,7 @@ const PhotoshopSidebar = ({
           <div className="space-y-3">
             <div>
               <label
-                className={`block text-xs font-medium ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                } mb-2`}
+                className={`block text-xs font-medium text-foreground mb-2`}
               >
                 Frame Style
               </label>
@@ -379,9 +319,7 @@ const PhotoshopSidebar = ({
             {config.frameStyle !== "none" && config.frameStyle !== "border" && (
               <div>
                 <label
-                  className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  } mb-2`}
+                  className={`block text-xs font-medium text-foreground mb-2`}
                 >
                   Frame Text
                 </label>
@@ -389,11 +327,7 @@ const PhotoshopSidebar = ({
                   type="text"
                   value={config.frameText}
                   onChange={(e) => updateConfig({ frameText: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark
-                      ? "bg-gray-800 border-gray-600 text-gray-200"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
+                  className={`w-full p-2 text-sm border rounded`}
                   placeholder="Enter frame text..."
                 />
               </div>
@@ -410,9 +344,7 @@ const PhotoshopSidebar = ({
             <div className="space-y-4">
               <div>
                 <label
-                  className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  } mb-2`}
+                  className={`block text-xs font-medium text-foreground mb-2`}
                 >
                   QR Body Style
                 </label>
@@ -428,9 +360,7 @@ const PhotoshopSidebar = ({
 
               <div>
                 <label
-                  className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  } mb-2`}
+                  className={`block text-xs font-medium text-foreground mb-2`}
                 >
                   Corner Eyes
                 </label>
@@ -446,9 +376,7 @@ const PhotoshopSidebar = ({
 
               <div>
                 <label
-                  className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  } mb-2`}
+                  className={`block text-xs font-medium text-foreground mb-2`}
                 >
                   Color Effects
                 </label>
@@ -488,26 +416,14 @@ const PhotoshopSidebar = ({
           <div className="space-y-3">
             <button
               onClick={logoUpload.triggerFileUpload}
-              className={`w-full flex items-center justify-center space-x-2 px-3 py-2 border-2 border-dashed rounded transition-all duration-300 group ${
-                isDark
-                  ? "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
-                  : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-              }`}
+              className={`w-full flex items-center justify-center space-x-2 px-3 py-2 border-2 border-dashed rounded transition-all duration-300 group`}
             >
               <Upload
                 size={16}
-                className={`${
-                  isDark
-                    ? "text-gray-400 group-hover:text-gray-300"
-                    : "text-gray-500 group-hover:text-gray-700"
-                }`}
+                className={`${"text-gray-400 group-hover:text-gray-300"}`}
               />
               <span
-                className={`text-sm ${
-                  isDark
-                    ? "text-gray-400 group-hover:text-gray-300"
-                    : "text-gray-600 group-hover:text-gray-800"
-                }`}
+                className={`text-sm text-gray-600 group-hover:text-gray-800`}
               >
                 Upload Logo
               </span>
@@ -521,11 +437,7 @@ const PhotoshopSidebar = ({
             />
 
             {logoDataUrl && (
-              <div
-                className={`${
-                  isDark ? "bg-gray-800" : "bg-gray-100"
-                } rounded p-3`}
-              >
+              <div className={`bg-gray-100 dark:bg-gray-800 rounded p-3`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <img
@@ -533,21 +445,13 @@ const PhotoshopSidebar = ({
                       alt="Logo preview"
                       className="w-8 h-8 object-cover rounded"
                     />
-                    <span
-                      className={`text-xs ${
-                        isDark ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
+                    <span className={`text-xs text-gray-700`}>
                       Logo uploaded
                     </span>
                   </div>
                   <button
                     onClick={logoUpload.removeFile}
-                    className={`${
-                      isDark
-                        ? "text-gray-400 hover:text-red-400"
-                        : "text-gray-500 hover:text-red-500"
-                    } transition-colors`}
+                    className={`text-gray-500 hover:text-red-500 transition-colors`}
                   >
                     <X size={16} />
                   </button>
@@ -556,11 +460,7 @@ const PhotoshopSidebar = ({
             )}
 
             {logoDataUrl && (
-              <div
-                className={`space-y-3 pt-3 border-t ${
-                  isDark ? "border-gray-700" : "border-gray-200"
-                }`}
-              >
+              <div className={`space-y-3 pt-3 border-t border-border`}>
                 <RangeControl
                   label="Logo Size"
                   value={config.logoSize}
@@ -608,26 +508,14 @@ const PhotoshopSidebar = ({
           <div className="space-y-3">
             <button
               onClick={pixelMatchUpload.triggerFileUpload}
-              className={`w-full flex items-center justify-center space-x-2 px-3 py-2 border-2 border-dashed rounded transition-all duration-300 group ${
-                isDark
-                  ? "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
-                  : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-              }`}
+              className={`w-full flex items-center justify-center space-x-2 px-3 py-2 border-2 border-dashed rounded transition-all duration-300 group`}
             >
               <Upload
                 size={16}
-                className={`${
-                  isDark
-                    ? "text-gray-400 group-hover:text-gray-300"
-                    : "text-gray-500 group-hover:text-gray-700"
-                }`}
+                className={`${"text-gray-400 group-hover:text-gray-300"}`}
               />
               <span
-                className={`text-sm ${
-                  isDark
-                    ? "text-gray-400 group-hover:text-gray-300"
-                    : "text-gray-600 group-hover:text-gray-800"
-                }`}
+                className={`text-sm text-gray-600 group-hover:text-gray-800`}
               >
                 Upload Image
               </span>
@@ -641,11 +529,7 @@ const PhotoshopSidebar = ({
             />
 
             {pixelMatchImageUrl && (
-              <div
-                className={`${
-                  isDark ? "bg-gray-800" : "bg-gray-100"
-                } rounded p-3`}
-              >
+              <div className={`bg-gray-100 dark:bg-gray-800 rounded p-3`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <img
@@ -653,21 +537,13 @@ const PhotoshopSidebar = ({
                       alt="Pixel match preview"
                       className="w-8 h-8 object-cover rounded"
                     />
-                    <span
-                      className={`text-xs ${
-                        isDark ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
+                    <span className={`text-xs text-gray-700`}>
                       Image uploaded
                     </span>
                   </div>
                   <button
                     onClick={pixelMatchUpload.removeFile}
-                    className={`${
-                      isDark
-                        ? "text-gray-400 hover:text-red-400"
-                        : "text-gray-500 hover:text-red-500"
-                    } transition-colors`}
+                    className={`text-gray-500 hover:text-red-500 transition-colors`}
                   >
                     <X size={16} />
                   </button>
@@ -676,11 +552,7 @@ const PhotoshopSidebar = ({
             )}
 
             {config.pixelMatchEnabled && config.pixelMatchImage && (
-              <div
-                className={`space-y-3 pt-3 border-t ${
-                  isDark ? "border-gray-700" : "border-gray-200"
-                }`}
-              >
+              <div className={`space-y-3 pt-3 border-t border-border`}>
                 <ToggleControl
                   id="pixel-match-enabled"
                   label="Enable Pixel Matching"
@@ -714,9 +586,7 @@ const PhotoshopSidebar = ({
 
                 <div>
                   <label
-                    className={`block text-xs font-medium ${
-                      isDark ? "text-gray-300" : "text-gray-700"
-                    } mb-2`}
+                    className={`block text-xs font-medium text-foreground mb-2`}
                   >
                     Blending Mode
                   </label>
@@ -738,7 +608,7 @@ const PhotoshopSidebar = ({
       </div>
 
       {/* Footer Actions */}
-      <div className={`border-t ${borderColor} p-4`}>
+      <div className={`border-t border-border p-4`}>
         <button
           onClick={resetConfig}
           className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"

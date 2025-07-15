@@ -69,12 +69,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Floating background elements - optimized */}
+    <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
+      {/* Floating background elements - optimized and theme-aware */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-64 h-64 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float"></div>
+        <div className="absolute -top-40 -right-40 w-64 h-64 bg-gradient-to-r from-purple-400/30 to-pink-400/30 dark:from-purple-600/20 dark:to-pink-600/20 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float"></div>
         <div
-          className="absolute -bottom-40 -left-40 w-64 h-64 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float"
+          className="absolute -bottom-40 -left-40 w-64 h-64 bg-gradient-to-r from-blue-400/30 to-indigo-400/30 dark:from-blue-600/20 dark:to-indigo-600/20 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float"
           style={{ animationDelay: "4s" }}
         ></div>
       </div>
@@ -82,17 +82,17 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12 relative z-10">
         <header className="text-center mb-12">
           <div className="inline-block mb-6">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
               <h1 className="text-6xl font-bold mb-4 animate-gradient">
                 QR Code Generator
               </h1>
             </div>
-            <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full mx-auto w-32 animate-pulse-slow"></div>
+            <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full mx-auto w-32 animate-pulse-slow"></div>
           </div>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Create stunning, professional QR codes with advanced customization
             options.
-            <span className="font-semibold text-blue-600">
+            <span className="font-semibold text-primary">
               {" "}
               No limits, no watermarks, completely free.
             </span>
@@ -108,7 +108,7 @@ export default function Home() {
             ].map((feature, index) => (
               <span
                 key={feature}
-                className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 border border-white/20 shadow-sm hover:shadow-md transition-all duration-300"
+                className="px-4 py-2 bg-card/60 backdrop-blur-sm rounded-full text-sm font-medium text-card-foreground border border-border shadow-sm hover:shadow-md hover:bg-card/80 transition-all duration-300"
                 style={{ animationDelay: `${index * 200}ms` }}
               >
                 {feature}

@@ -13,11 +13,11 @@
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
@@ -53,9 +53,41 @@
   * {
     @apply border-border;
   }
+  
   body {
-    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-foreground min-h-screen;
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* QR Code specific styles */
+.qr-container {
+  @apply bg-card border border-border rounded-lg shadow-sm;
+}
+
+.control-panel {
+  @apply bg-card border border-border rounded-lg p-6;
+}
+
+.input-field {
+  @apply bg-input border border-border text-foreground rounded-md px-3 py-2;
+}
+
+.input-field:focus {
+  @apply outline-none ring-2 ring-ring ring-offset-2;
+}
+
+.button-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-colors;
+}
+
+.button-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md transition-colors;
 }
 
 /* Custom animations */
@@ -94,9 +126,11 @@
 
 /* Glass morphism effect */
 .glass {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  @apply bg-background/25 backdrop-blur-sm border border-border/20;
+}
+
+.dark .glass {
+  @apply bg-background/10 border-border/10;
 }
 
 /* Improved button styles */
@@ -114,7 +148,7 @@
 
 /* Enhanced card styles */
 .card {
-  @apply bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl;
+  @apply bg-card/80 backdrop-blur-sm border border-border rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl;
 }
 
 .color-picker {
@@ -178,7 +212,7 @@
 /* Custom scrollbar styles */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgb(209 213 219) rgb(243 244 246);
+  scrollbar-color: hsl(var(--muted)) hsl(var(--background));
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -186,18 +220,18 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: rgb(243 244 246);
+  background: hsl(var(--background));
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgb(209 213 219);
+  background: hsl(var(--muted));
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgb(156 163 175);
+  background: hsl(var(--muted-foreground));
 }
 
 /* Smooth scrolling */
