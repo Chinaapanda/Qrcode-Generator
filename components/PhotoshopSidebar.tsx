@@ -31,6 +31,8 @@ interface PhotoshopSidebarProps {
   setLogoDataUrl: (url: string | null) => void;
   pixelMatchImageUrl: string | null;
   setPixelMatchImageUrl: (url: string | null) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 interface PanelProps {
@@ -72,6 +74,8 @@ const PhotoshopSidebar = ({
   setLogoDataUrl,
   pixelMatchImageUrl,
   setPixelMatchImageUrl,
+  isOpen,
+  onClose,
 }: PhotoshopSidebarProps) => {
   // Use custom hooks
   const {
@@ -148,7 +152,14 @@ const PhotoshopSidebar = ({
   ];
 
   return (
-    <div className="fixed right-0 top-0 h-screen w-80 bg-background border-l border-border z-50 overflow-y-auto scrollbar-thin">
+    <div
+      className={`
+        fixed top-0 h-screen w-80 bg-background border-l border-border z-50 overflow-y-auto scrollbar-thin
+        transition-transform duration-300 ease-in-out
+        ${isOpen ? "translate-x-0" : "translate-x-full"}
+        lg:translate-x-0 lg:right-0 right-0
+      `}
+    >
       {/* Header */}
       <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
@@ -158,7 +169,17 @@ const PhotoshopSidebar = ({
               QR Customizer
             </h2>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+            {/* Mobile close button */}
+            <button
+              onClick={onClose}
+              className="lg:hidden p-2 hover:bg-accent rounded-lg transition-colors"
+              aria-label="Close sidebar"
+            >
+              <X size={18} className="text-muted-foreground" />
+            </button>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           Professional QR Code Designer

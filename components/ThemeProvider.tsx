@@ -37,7 +37,23 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
-  const [actualTheme, setActualTheme] = useState<"dark" | "light">("light");
+  const [actualTheme, setActualTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme =
+        (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+
+      if (storedTheme === "system") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      return storedTheme;
+    }
+
+    // Server-side default
+    return "light";
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

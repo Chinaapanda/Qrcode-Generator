@@ -79,17 +79,17 @@ export default function Home() {
         ></div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 relative z-10">
-        <header className="text-center mb-12">
-          <div className="inline-block mb-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10">
+        <header className="text-center mb-8 md:mb-12">
+          <div className="inline-block mb-4 md:mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
-              <h1 className="text-6xl font-bold mb-4 animate-gradient">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 animate-gradient">
                 QR Code Generator
               </h1>
             </div>
-            <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full mx-auto w-32 animate-pulse-slow"></div>
+            <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full mx-auto w-24 sm:w-32 animate-pulse-slow"></div>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
             Create stunning, professional QR codes with advanced customization
             options.
             <span className="font-semibold text-primary">
@@ -98,8 +98,8 @@ export default function Home() {
             </span>
           </p>
 
-          {/* Feature badges */}
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
+          {/* Feature badges - Responsive layout */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-2 sm:gap-3 mt-6 md:mt-8 max-w-lg mx-auto">
             {[
               "🎨 Custom Colors",
               "📱 Mobile Ready",
@@ -108,7 +108,7 @@ export default function Home() {
             ].map((feature, index) => (
               <span
                 key={feature}
-                className="px-4 py-2 bg-card/60 backdrop-blur-sm rounded-full text-sm font-medium text-card-foreground border border-border shadow-sm hover:shadow-md hover:bg-card/80 transition-all duration-300"
+                className="px-3 sm:px-4 py-2 bg-card/60 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-card-foreground border border-border shadow-sm hover:shadow-md hover:bg-card/80 transition-all duration-300"
                 style={{ animationDelay: `${index * 200}ms` }}
               >
                 {feature}

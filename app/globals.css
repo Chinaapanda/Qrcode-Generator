@@ -106,21 +106,7 @@
   50% { background-position: 100% 50%; }
 }
 
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-  will-change: transform;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
-  will-change: opacity;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease infinite;
-  will-change: background-position;
-}
+/* Animation definitions moved to mobile-optimized section below */
 
 /* Removed shimmer animation for better performance */
 
@@ -133,22 +119,22 @@
   @apply bg-background/10 border-border/10;
 }
 
-/* Improved button styles */
+/* Improved button styles - More mobile-friendly */
 .btn-primary {
-  @apply relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+  @apply relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl min-h-[44px] touch-manipulation;
 }
 
 .btn-secondary {
-  @apply relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+  @apply relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-3 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl min-h-[44px] touch-manipulation;
 }
 
 .btn-neutral {
-  @apply relative overflow-hidden bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+  @apply relative overflow-hidden bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold py-3 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl min-h-[44px] touch-manipulation;
 }
 
-/* Enhanced card styles */
+/* Enhanced card styles - Responsive */
 .card {
-  @apply bg-card/80 backdrop-blur-sm border border-border rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl;
+  @apply bg-card/80 backdrop-blur-sm border border-border rounded-xl md:rounded-2xl shadow-lg md:shadow-xl transition-all duration-300 hover:shadow-2xl;
 }
 
 .color-picker {
@@ -237,4 +223,75 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+} 
+
+/* Mobile-optimized animations - Reduce motion on mobile for performance */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+    will-change: opacity;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 6s ease infinite;
+    will-change: background-position;
+  }
+}
+
+/* Disable animations on mobile devices for better performance */
+@media (max-width: 768px) {
+  .animate-float,
+  .animate-pulse-slow,
+  .animate-gradient {
+    animation: none;
+  }
+  
+  /* Reduce transform animations on mobile for better performance */
+  .hover\\:scale-105:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, .btn-primary, .btn-secondary, .btn-neutral {
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Fix iOS zoom issues */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="number"], 
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
 } 
